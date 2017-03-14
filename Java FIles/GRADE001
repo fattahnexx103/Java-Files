@@ -1,0 +1,71 @@
+
+PREF="/afs/cad/courses/ccs/f14/cs/114/001/calvin/"
+CHKS="/afs/cad.njit.edu/courses/ccs/f14/cs/114/001/calvin/CHECKS/"
+
+usrs=(aak67 aaq6 ab648 af234 akl25 am735 ct238 ddp34 \
+dje8 dma27 dmr37 \
+drk25 dyp6 ep85 es245 es266 fmm8 grd6 jd352 jjm39 \
+jw299 kaj5 kmd35 kp375 \
+ls299 lv47 mal46 mcm32 nal9 oa89 rp387 sa633 \
+sam67 smy7 ta.dir tp85)
+
+
+
+
+for nm in ${usrs[*]}
+  do
+    summary="ucid $nm\t"
+    cd ${PREF}
+    echo "Processing ${nm}:"
+    cd ../${nm}
+    cd Sept8
+
+    for prob in FindMax SumOfPrevious ProdOfPrevious; do
+      if [ "$prob" == "ProdOfPrevious" ]; then
+        cd ../Sept15
+      fi
+      summary+="$prob"
+      echo problem: $prob
+      score=0
+      if [ -f $prob.java ]; then
+        score=2
+      fi
+      if javac $prob.java; then
+        score=4
+      fi
+      echo "score=$score"
+      java $prob < ${CHKS}$prob.in1 > out
+      if (diff -wB out ${CHKS}$prob.exp1 > /dev/null)
+      then
+        score=$((score+3))
+        echo "Checks"
+      else
+        echo "With input:"
+        cat ${CHKS}$prob.in1
+        echo "got:"
+        cat out
+        echo "but expected:"
+        cat ${CHKS}$prob.exp1
+      fi
+      rm out
+      
+      java $prob < ${CHKS}$prob.in2 > out
+      if (diff -wB out ${CHKS}$prob.exp2 > /dev/null)
+      then
+        score=$((score+3))
+        echo "Checks"
+      else
+        echo "With input:"
+        cat ${CHKS}$prob.in2
+        echo "got:"
+        cat out
+        echo "but expected:"
+        cat ${CHKS}$prob.exp2
+      fi
+      rm out
+      echo "$prob  score=$score"
+      summary+="\t$score\t"
+    done
+    echo -e $summary
+    cd ${PREF}
+  done
